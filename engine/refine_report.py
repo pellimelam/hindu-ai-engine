@@ -1,23 +1,23 @@
 import subprocess
 
-MODEL="models/model.gguf"
+MODEL = "models/model.gguf"
 
-draft=open("draft.txt").read()
+draft = open("draft.txt").read()
 
-prompt=f"""
+prompt = f"""
 Improve the following Hindu daily report.
 
-Make it clearer, structured, and insightful.
+Make it clearer and better structured.
 
 {draft}
 """
 
-result=subprocess.run(
+result = subprocess.run(
 [
 "./llama.cpp/build/bin/llama-cli",
-"-m",MODEL,
-"-p",prompt,
-"-n","500"
+"-m", MODEL,
+"-p", prompt,
+"-n", "400"
 ],
 capture_output=True,
 text=True
