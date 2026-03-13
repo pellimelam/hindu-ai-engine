@@ -1,12 +1,25 @@
 import json
 import pathlib
 
-texts=[]
+texts = []
 
 for file in pathlib.Path("scriptures").glob("*.txt"):
-    with open(file,"r",encoding="utf-8") as f:
-        texts+=f.read().split("\n")
+    with open(file, "r", encoding="utf-8") as f:
 
-texts=[t.strip() for t in texts if len(t)>40]
+        content = f.read()
 
-json.dump(texts,open("corpus.json","w"))
+        chunks = content.split("\n\n")
+
+        for chunk in chunks:
+
+            t = chunk.strip()
+
+            if len(t) > 50:
+                texts.append(t)
+
+print("Corpus size:", len(texts))
+
+if len(texts) == 0:
+    raise Exception("Corpus empty. Check scripture files.")
+
+json.dump(texts, open("corpus.json", "w"))
