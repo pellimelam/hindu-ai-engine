@@ -1,0 +1,54 @@
+name: Hindu AI Knowledge Engine
+
+on:
+  schedule:
+    - cron: "30 1 * * *"
+  workflow_dispatch:
+
+jobs:
+
+  pipeline:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Free disk
+      run: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y build-essential cmake python3-pip
+        pip install sentence-transformers numpy requests
+
+    - name: Build llama.cpp
+      run: |
+        git clone https://github.com/ggerganov/llama.cpp
+        cd llama.cpp
+        make
+
+    - name: Download model
+      run: |
+        mkdir models
+        wget -O models/llama.gguf \
+        https://huggingface.co/.../llama-3-8b-q4.gguf
+
+    - name: Run pipeline
+      run: |
+        python engine/prepare_corpus.py
+        python engine/build_embeddings.py
+        python engine/retrieve_context.py
+        python engine/generate_report.py
+        python engine/refine_report.py
+        python engine/send_telegram.py
+      env:
+        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+    - name: Cleanup
+      run: rm -rf models
