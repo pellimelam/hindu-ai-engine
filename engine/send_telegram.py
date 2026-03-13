@@ -1,5 +1,5 @@
-# send_telegram.py
-import requests, os
+import requests
+import os
 
 text=open("final.txt").read()
 
