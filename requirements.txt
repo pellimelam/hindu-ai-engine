@@ -1,2 +1,5 @@
+requests
 pyswisseph
 pytz
+sentence-transformers
+numpy
