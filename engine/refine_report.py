@@ -12,7 +12,7 @@ Make it clearer, deeper, and better structured.
 """
 
 result=subprocess.run(
-["./llama.cpp/main","-m","models/llama.gguf","-p",prompt,"-n","600"],
+["./llama.cpp/build/bin/llama-cli","-m","models/model.gguf","-p",prompt,"-n","600"],
 capture_output=True,text=True
 )
 
