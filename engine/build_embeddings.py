@@ -1,6 +1,6 @@
-# build_embeddings.py
 from sentence_transformers import SentenceTransformer
-import json, numpy as np
+import json
+import numpy as np
 
 model=SentenceTransformer("all-MiniLM-L6-v2")
 
