@@ -1,27 +1,47 @@
-# generate_report.py
-import subprocess, json, datetime
+import subprocess
+import json
+import datetime
 
-context="\n".join(json.load(open("context.json")))
+MODEL="models/model.gguf"
+
+data=json.load(open("context.json"))
+
+context="\n".join(data["context"])
+
+today=datetime.datetime.utcnow().strftime("%A %d %B %Y")
 
 prompt=f"""
-Generate a detailed Hindu daily knowledge report.
+Create a Hindu Daily Knowledge Report.
 
-Context:
+DATE
+{today}
+
+PANCHANG
+{data['panchang']}
+
+SCRIPTURE CONTEXT
 {context}
 
-Sections:
+Generate sections:
 
+🕉 DAILY HINDU KNOWLEDGE REPORT
 Date
-Panchang significance
+Meaning of today's tithi
 Festivals
 Scriptural insight
 Temple traditions
-Dharma guidance
+Daily dharma guidance
 """
 
 result=subprocess.run(
-["./llama.cpp/build/bin/llama-cli","-m","models/model.gguf","-p",prompt,"-n","600"],
-capture_output=True,text=True
+[
+"./llama.cpp/build/bin/llama-cli",
+"-m",MODEL,
+"-p",prompt,
+"-n","500"
+],
+capture_output=True,
+text=True
 )
 
 open("draft.txt","w").write(result.stdout)
