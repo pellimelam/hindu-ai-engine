@@ -1,29 +1,82 @@
-# retrieve_context.py
-import numpy as np, json, requests, datetime
+import json
+import numpy as np
+import datetime
+import swisseph as swe
 from sentence_transformers import SentenceTransformer
 
-texts=json.load(open("corpus.json"))
-emb=np.load("embeddings.npy")
+# -----------------------------
+# Panchang Calculation
+# -----------------------------
 
-model=SentenceTransformer("all-MiniLM-L6-v2")
+def calculate_panchang():
 
-panchang=requests.get(
-"https://api.drkalendar.com/panchang?lat=17.3850&lon=78.4867"
-).json()
+    now = datetime.datetime.utcnow()
 
-query=f"""
+    jd = swe.julday(now.year, now.month, now.day, now.hour)
+
+    moon = swe.calc_ut(jd, swe.MOON)[0][0]
+    sun = swe.calc_ut(jd, swe.SUN)[0][0]
+
+    diff = (moon - sun) % 360
+
+    # 30 tithis
+    tithi = int(diff / 12) + 1
+
+    # 27 nakshatras
+    nakshatra = int(moon / (360/27)) + 1
+
+    paksha = "Shukla" if diff < 180 else "Krishna"
+
+    return {
+        "tithi": tithi,
+        "nakshatra": nakshatra,
+        "paksha": paksha
+    }
+
+# -----------------------------
+# Load Vector Index
+# -----------------------------
+
+texts = json.load(open("corpus.json"))
+embeddings = np.load("embeddings.npy")
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# -----------------------------
+# Get Panchang Context
+# -----------------------------
+
+panchang = calculate_panchang()
+
+query = f"""
 Hindu calendar context
-Tithi {panchang.get("tithi")}
-Nakshatra {panchang.get("nakshatra")}
-Festival {panchang.get("festival")}
+
+Tithi: {panchang["tithi"]}
+Nakshatra: {panchang["nakshatra"]}
+Paksha: {panchang["paksha"]}
+
+Find relevant Hindu scripture verses explaining this context.
 """
 
-q=model.encode([query])[0]
+# -----------------------------
+# Retrieve Relevant Verses
+# -----------------------------
 
-scores=emb@q
+q = model.encode([query])[0]
 
-idx=scores.argsort()[-10:]
+scores = embeddings @ q
 
-context=[texts[i] for i in idx]
+idx = scores.argsort()[-10:]
 
-json.dump(context,open("context.json","w"))
+context = [texts[i] for i in idx]
+
+# -----------------------------
+# Save Context
+# -----------------------------
+
+output = {
+    "panchang": panchang,
+    "context": context
+}
+
+json.dump(output, open("context.json", "w"), indent=2)
