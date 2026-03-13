@@ -1,5 +1,5 @@
+sentence-transformers
+numpy
 requests
 pyswisseph
 pytz
-sentence-transformers
-numpy
