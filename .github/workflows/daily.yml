@@ -13,9 +13,10 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v4
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-    - name: Free disk
+    - name: Free disk space
       run: |
         sudo rm -rf /usr/share/dotnet
         sudo rm -rf /opt/ghc
@@ -26,40 +27,44 @@ jobs:
         sudo apt install -y cmake build-essential python3-pip
         pip install -r requirements.txt
 
-    - name: Cache llama.cpp build
-      uses: actions/cache@v4
-      with:
-        path: llama.cpp
-        key: llama-build
-
     - name: Build llama.cpp
       run: |
-        if [ ! -d "llama.cpp" ]; then
-          git clone https://github.com/ggerganov/llama.cpp
-          cd llama.cpp
-          cmake -B build
-          cmake --build build --config Release
-        fi
+        git clone https://github.com/ggerganov/llama.cpp
+        cd llama.cpp
+        cmake -B build
+        cmake --build build --config Release
 
-    - name: Cache model
-      uses: actions/cache@v4
-      with:
-        path: models
-        key: tinyllama-model
-
-    - name: Download model
+    - name: Create scriptures folder
       run: |
-        if [ ! -f "models/model.gguf" ]; then
-          mkdir -p models
-          pip install huggingface_hub
-          hf download \
-            TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF \
-            tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf \
-            --local-dir models
-          mv models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf models/model.gguf
-        fi
+        mkdir -p scriptures
 
-    - name: Run pipeline
+        echo "Bhagavad Gita verse:
+        You have the right to perform your prescribed duty, but not to the fruits of action." > scriptures/bhagavad_gita.txt
+
+        echo "Rig Veda teaching:
+        Let noble thoughts come to us from all directions." > scriptures/vedas.txt
+
+        echo "Upanishad teaching:
+        The Self is not known through study alone but through realization." > scriptures/upanishads.txt
+
+        echo "Purana teaching:
+        Dharma sustains the universe and guides human conduct." > scriptures/puranas.txt
+
+    - name: Install Hugging Face CLI
+      run: pip install huggingface_hub
+
+    - name: Download TinyLlama model
+      run: |
+        mkdir -p models
+
+        hf download \
+          TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF \
+          tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf \
+          --local-dir models
+
+        mv models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf models/model.gguf
+
+    - name: Run AI pipeline
       run: |
         python engine/prepare_corpus.py
         python engine/build_embeddings.py
@@ -70,3 +75,6 @@ jobs:
       env:
         TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+    - name: Cleanup
+      run: rm -rf models
