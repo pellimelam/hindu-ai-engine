@@ -1,25 +1,34 @@
 import json
 import pathlib
+import re
 
-texts = []
+texts=[]
 
-for file in pathlib.Path("scriptures").glob("*.txt"):
-    with open(file, "r", encoding="utf-8") as f:
+path=pathlib.Path("scriptures")
 
-        content = f.read()
+if not path.exists():
+    raise Exception("scriptures folder missing")
 
-        chunks = content.split("\n\n")
+for file in path.glob("*.txt"):
 
-        for chunk in chunks:
+    with open(file,"r",encoding="utf-8") as f:
 
-            t = chunk.strip()
+        content=f.read()
 
-            if len(t) > 50:
+        content=content.replace("\n"," ")
+
+        sentences=re.split(r'[.!?]',content)
+
+        for s in sentences:
+
+            t=s.strip()
+
+            if len(t)>40:
                 texts.append(t)
 
-print("Corpus size:", len(texts))
+print("Corpus size:",len(texts))
 
-if len(texts) == 0:
-    raise Exception("Corpus empty. Check scripture files.")
+if len(texts)==0:
+    raise Exception("Corpus empty")
 
-json.dump(texts, open("corpus.json", "w"))
+json.dump(texts,open("corpus.json","w"))
