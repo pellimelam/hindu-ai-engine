@@ -20,7 +20,7 @@ Dharma guidance
 """
 
 result=subprocess.run(
-["./llama.cpp/build/bin/llama-cli","-m","models/llama.gguf","-p",prompt,"-n","600"],
+["./llama.cpp/build/bin/llama-cli","-m","models/model.gguf","-p",prompt,"-n","600"],
 capture_output=True,text=True
 )
 
