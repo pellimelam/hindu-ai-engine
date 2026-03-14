@@ -4,14 +4,27 @@ import datetime
 
 data = json.load(open("context.json"))
 
-context = "\n".join(data["context"])
-
 p = data["panchang"]
+context = "\n".join(data["context"])
 
 today = datetime.datetime.now(datetime.UTC).strftime("%A, %d %B %Y")
 
 prompt = f"""
-Create a TELEGRAM FRIENDLY message.
+You are generating a DAILY HINDU GUIDE for Telegram.
+
+IMPORTANT RULES:
+- Do NOT modify the Panchang values.
+- Do NOT change times or names.
+- Only explain them.
+
+LOCKED DATA:
+Sunrise: {p['sunrise']}
+Sunset: {p['sunset']}
+Tithi: {p['tithi']}
+Nakshatra: {p['nakshatra']}
+Festival: {p['festival']}
+
+Create this format:
 
 🔆 DIGITAL DAILY HINDU GUIDE
 ━━━━━━━━━━━━━━━━━━
@@ -26,41 +39,29 @@ Sunset: {p['sunset']}
 🌙 Panchang
 Tithi: {p['tithi']}
 Nakshatra: {p['nakshatra']}
-Paksha: {p['paksha']}
 
-━━━━━━━━━━━━━━━━━━
+🎉 Festival / Observance
+{p['festival']}
 
 📿 Mantra for Today
-Provide a simple mantra appropriate for today's tithi.
+Provide one suitable mantra.
 
-━━━━━━━━━━━━━━━━━━
-
-📜 Wisdom from Hindu Scriptures
-Give one short teaching explained simply.
-
-━━━━━━━━━━━━━━━━━━
+📜 Wisdom from Scriptures
+Explain one teaching simply.
 
 🪔 Simple Dharma Practice
-Give 3 simple actions anyone can follow today.
+Give 3 practical actions for daily life.
 
-━━━━━━━━━━━━━━━━━━
-
-🧘 Quiet Reflection
-Provide a short meditation idea.
-
-Context:
+Context for scriptural insight:
 {context}
 """
 
 response = requests.post(
-"http://localhost:11434/api/generate",
-json={
-"model":"phi3",
-"prompt":prompt,
-"stream":False
-}
+    "http://localhost:11434/api/generate",
+    json={"model":"phi3","prompt":prompt,"stream":False},
+    timeout=60
 )
 
-result = response.json()["response"]
+text = response.json()["response"]
 
-open("draft.txt","w").write(result)
+open("draft.txt","w").write(text)
