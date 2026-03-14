@@ -1,18 +1,15 @@
 import requests
 
-draft=open("draft.txt").read()
+draft = open("draft.txt").read()
 
-prompt=f"""
-Improve formatting for Telegram.
-
-Keep symbols and sections.
-
-Make text easy for common people.
+prompt = f"""
+Improve readability for Telegram.
+Keep sections clear and easy for common people.
 
 {draft}
 """
 
-response=requests.post(
+response = requests.post(
 "http://localhost:11434/api/generate",
 json={
 "model":"phi3",
