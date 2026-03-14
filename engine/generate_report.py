@@ -2,16 +2,15 @@ import requests
 import json
 import datetime
 
-data=json.load(open("context.json"))
+data = json.load(open("context.json"))
 
-context="\n".join(data["context"])
+context = "\n".join(data["context"])
+p = data["panchang"]
 
-today=datetime.datetime.now(datetime.UTC).strftime("%A, %d %B %Y")
+today = datetime.datetime.utcnow().strftime("%A, %d %B %Y")
 
-p=data["panchang"]
-
-prompt=f"""
-Create a TELEGRAM FRIENDLY message.
+prompt = f"""
+Create a clean Telegram message.
 
 🔆 DIGITAL DAILY HINDU GUIDE
 ━━━━━━━━━━━━━━━━━━
@@ -24,59 +23,40 @@ Sunrise: {p['sunrise']}
 Sunset: {p['sunset']}
 
 🌙 Panchang
-Month: {p['month']}
-Tithi: {p['tithi_name']}
-Nakshatra: {p['nakshatra_name']}
+Tithi: {p['tithi']}
+Nakshatra: {p['nakshatra']}
 Paksha: {p['paksha']}
-
-Meaning
-Explain in simple language.
 
 ━━━━━━━━━━━━━━━━━━
 
-🎉 Festival
+🎉 Festival / Observance
 {p['festival']}
-
-🏵 Regional Observance
-{p['regional_festival']}
 
 ━━━━━━━━━━━━━━━━━━
 
 📿 Mantra for Today
-{p['mantra']}
-
-Explain meaning simply.
+Provide a simple mantra related to today's tithi.
 
 ━━━━━━━━━━━━━━━━━━
 
 📜 Wisdom from Scriptures
-Short teaching.
-
-━━━━━━━━━━━━━━━━━━
-
-🏛 Temple Traditions
-Explain briefly.
+Short teaching in simple language.
 
 ━━━━━━━━━━━━━━━━━━
 
 🪔 Simple Dharma Practice
-Give 3 simple actions.
+3 simple actions people can do today.
 
 ━━━━━━━━━━━━━━━━━━
 
-🧘 Quiet Reflection
-Short meditation idea.
-
-━━━━━━━━━━━━━━━━━━
-
-🌱 Respect Nature
-One simple environmental action.
+🧘 Reflection
+One short meditation idea.
 
 Context:
 {context}
 """
 
-response=requests.post(
+response = requests.post(
 "http://localhost:11434/api/generate",
 json={
 "model":"phi3",
