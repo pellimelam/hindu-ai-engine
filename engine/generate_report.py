@@ -5,12 +5,13 @@ import datetime
 data = json.load(open("context.json"))
 
 context = "\n".join(data["context"])
+
 p = data["panchang"]
 
-today = datetime.datetime.utcnow().strftime("%A, %d %B %Y")
+today = datetime.datetime.now(datetime.UTC).strftime("%A, %d %B %Y")
 
 prompt = f"""
-Create a clean Telegram message.
+Create a TELEGRAM FRIENDLY message.
 
 🔆 DIGITAL DAILY HINDU GUIDE
 ━━━━━━━━━━━━━━━━━━
@@ -29,28 +30,23 @@ Paksha: {p['paksha']}
 
 ━━━━━━━━━━━━━━━━━━
 
-🎉 Festival / Observance
-{p['festival']}
-
-━━━━━━━━━━━━━━━━━━
-
 📿 Mantra for Today
-Provide a simple mantra related to today's tithi.
+Provide a simple mantra appropriate for today's tithi.
 
 ━━━━━━━━━━━━━━━━━━
 
-📜 Wisdom from Scriptures
-Short teaching in simple language.
+📜 Wisdom from Hindu Scriptures
+Give one short teaching explained simply.
 
 ━━━━━━━━━━━━━━━━━━
 
 🪔 Simple Dharma Practice
-3 simple actions people can do today.
+Give 3 simple actions anyone can follow today.
 
 ━━━━━━━━━━━━━━━━━━
 
-🧘 Reflection
-One short meditation idea.
+🧘 Quiet Reflection
+Provide a short meditation idea.
 
 Context:
 {context}
@@ -65,4 +61,6 @@ json={
 }
 )
 
-open("draft.txt","w").write(response.json()["response"])
+result = response.json()["response"]
+
+open("draft.txt","w").write(result)
