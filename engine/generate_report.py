@@ -6,40 +6,81 @@ data = json.load(open("context.json"))
 
 context = "\n".join(data["context"])
 
-today = datetime.datetime.now(datetime.UTC).strftime("%A %d %B %Y")
+today = datetime.datetime.now(datetime.UTC).strftime("%A, %d %B %Y")
+
+p = data["panchang"]
 
 prompt = f"""
-Create a Hindu Daily Knowledge Report.
+Create a TELEGRAM FRIENDLY message.
 
-DATE
+Rules:
+- very easy language
+- short paragraphs
+- use symbols
+- useful for common people
+- no long essays
+
+Format exactly like this:
+
+🔆 DIGITAL DAILY HINDU GUIDE
+━━━━━━━━━━━━━━━━━━
+
+📅 Date
 {today}
 
-PANCHANG
-{data['panchang']}
+🌙 Panchang
+Tithi: {p['tithi_name']}
+Nakshatra: {p['nakshatra_name']}
+Paksha: {p['paksha']}
 
-SCRIPTURE CONTEXT
+Meaning:
+Explain what this lunar day represents in simple language.
+
+━━━━━━━━━━━━━━━━━━
+
+🎉 Festival / Observance
+{p['festival']}
+
+Explain briefly.
+
+━━━━━━━━━━━━━━━━━━
+
+📜 Wisdom from Hindu Scriptures
+Give one short teaching and explain it simply.
+
+━━━━━━━━━━━━━━━━━━
+
+🏛 Temple Traditions
+What rituals people may see in temples today.
+
+━━━━━━━━━━━━━━━━━━
+
+🪔 Simple Dharma Practice Today
+Give 3 simple actions people can do today.
+
+━━━━━━━━━━━━━━━━━━
+
+🧘 Quiet Reflection
+Short meditation idea for peace of mind.
+
+━━━━━━━━━━━━━━━━━━
+
+🌱 Living with Nature
+One simple action that respects nature.
+
+━━━━━━━━━━━━━━━━━━
+
+Context:
 {context}
-
-Generate sections:
-
-🕉 DAILY HINDU KNOWLEDGE REPORT
-Date
-Meaning of today's tithi
-Festivals
-Scriptural insight
-Temple traditions
-Daily dharma guidance
 """
 
 response = requests.post(
 "http://localhost:11434/api/generate",
 json={
-"model": "phi3",
-"prompt": prompt,
-"stream": False
+"model":"phi3",
+"prompt":prompt,
+"stream":False
 }
 )
 
-result = response.json()["response"]
-
-open("draft.txt","w").write(result)
+open("draft.txt","w").write(response.json()["response"])
