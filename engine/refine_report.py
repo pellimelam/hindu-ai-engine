@@ -1,26 +1,22 @@
-import subprocess
-
-MODEL = "models/model.gguf"
+import requests
 
 draft = open("draft.txt").read()
 
 prompt = f"""
 Improve the following Hindu daily report.
 
-Make it clearer and better structured.
+Make it clearer and more insightful.
 
 {draft}
 """
 
-result = subprocess.run(
-[
-"./llama.cpp/build/bin/llama-cli",
-"-m", MODEL,
-"-p", prompt,
-"-n", "400"
-],
-capture_output=True,
-text=True
+response = requests.post(
+"http://localhost:11434/api/generate",
+json={
+"model": "phi3",
+"prompt": prompt,
+"stream": False
+}
 )
 
-open("final.txt","w").write(result.stdout)
+open("final.txt","w").write(response.json()["response"])
