@@ -65,7 +65,7 @@ def get_sun_times():
 
 def calculate_panchang():
 
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
 
     jd = swe.julday(now.year, now.month, now.day, now.hour)
 
