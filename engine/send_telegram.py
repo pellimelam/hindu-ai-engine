@@ -1,11 +1,20 @@
 import requests
-import os
 
-text = open("final.txt").read()
+draft = open("draft.txt").read()
 
-requests.post(
-f"https://api.telegram.org/bot{os.environ['TELEGRAM_TOKEN']}/sendMessage",
-json={
-"chat_id": os.environ["TELEGRAM_CHAT_ID"],
-"text": text
-})
+prompt = f"""
+Improve readability for Telegram.
+
+Use short sections, spacing, and clear bullet points.
+
+Keep all factual data unchanged.
+
+{draft}
+"""
+
+response = requests.post(
+"http://localhost:11434/api/generate",
+json={"model":"phi3","prompt":prompt,"stream":False}
+)
+
+open("final.txt","w").write(response.json()["response"])
