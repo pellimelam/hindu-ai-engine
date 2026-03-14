@@ -13,10 +13,9 @@ jobs:
 
     steps:
 
-    - name: Checkout repo
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-    - name: Free disk space
+    - name: Free disk
       run: |
         sudo rm -rf /usr/share/dotnet
         sudo rm -rf /opt/ghc
@@ -27,6 +26,12 @@ jobs:
         sudo apt install -y cmake build-essential python3-pip
         pip install -r requirements.txt
 
+    - name: Cache HuggingFace models
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/huggingface
+        key: hf-cache
+
     - name: Build llama.cpp
       run: |
         git clone https://github.com/ggerganov/llama.cpp
@@ -34,26 +39,42 @@ jobs:
         cmake -B build
         cmake --build build --config Release
 
-    - name: Create scriptures folder
+    - name: Create scripture corpus
       run: |
         mkdir -p scriptures
 
-        echo "Bhagavad Gita verse:
-        You have the right to perform your prescribed duty, but not to the fruits of action." > scriptures/bhagavad_gita.txt
+        cat <<EOF > scriptures/bhagavad_gita.txt
+Arjuna said the mind is restless and difficult to control.
+Krishna replied that discipline and detachment can control the mind.
+One should perform duty without attachment to results.
+Yoga is balance in action.
+EOF
 
-        echo "Rig Veda teaching:
-        Let noble thoughts come to us from all directions." > scriptures/vedas.txt
+        cat <<EOF > scriptures/vedas.txt
+Let noble thoughts come to us from all directions.
+Truth is one, sages call it by many names.
+The universe is sustained by cosmic order called Rta.
+Knowledge leads to liberation.
+EOF
 
-        echo "Upanishad teaching:
-        The Self is not known through study alone but through realization." > scriptures/upanishads.txt
+        cat <<EOF > scriptures/upanishads.txt
+The Self is the ultimate reality.
+He who knows the Self transcends sorrow.
+Meditation reveals the inner truth.
+All existence is Brahman.
+EOF
 
-        echo "Purana teaching:
-        Dharma sustains the universe and guides human conduct." > scriptures/puranas.txt
+        cat <<EOF > scriptures/puranas.txt
+Dharma sustains the world.
+The divine manifests in many forms to restore balance.
+Devotion leads to spiritual liberation.
+Righteous living preserves cosmic harmony.
+EOF
 
-    - name: Install Hugging Face CLI
+    - name: Install HuggingFace CLI
       run: pip install huggingface_hub
 
-    - name: Download TinyLlama model
+    - name: Download LLM model
       run: |
         mkdir -p models
 
@@ -63,6 +84,8 @@ jobs:
           --local-dir models
 
         mv models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf models/model.gguf
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
     - name: Run AI pipeline
       run: |
@@ -75,6 +98,4 @@ jobs:
       env:
         TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-
-    - name: Cleanup
-      run: rm -rf models
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
