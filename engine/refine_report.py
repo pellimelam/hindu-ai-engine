@@ -3,9 +3,9 @@ import requests
 draft = open("draft.txt").read()
 
 prompt = f"""
-Improve the following Hindu daily report.
+Improve formatting and readability.
 
-Make it clearer and more insightful.
+Make it clear, structured, and friendly for Telegram readers.
 
 {draft}
 """
@@ -13,9 +13,9 @@ Make it clearer and more insightful.
 response = requests.post(
 "http://localhost:11434/api/generate",
 json={
-"model": "phi3",
-"prompt": prompt,
-"stream": False
+"model":"phi3",
+"prompt":prompt,
+"stream":False
 }
 )
 
