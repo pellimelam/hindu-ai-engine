@@ -6,9 +6,6 @@ texts=[]
 
 path=pathlib.Path("scriptures")
 
-if not path.exists():
-    raise Exception("scriptures folder missing")
-
 for file in path.glob("*.txt"):
 
     with open(file,"r",encoding="utf-8") as f:
