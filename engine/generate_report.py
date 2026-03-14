@@ -2,20 +2,16 @@ import requests
 import json
 import datetime
 
-data = json.load(open("context.json"))
+data=json.load(open("context.json"))
 
-context = "\n".join(data["context"])
+context="\n".join(data["context"])
 
-today = datetime.datetime.now(datetime.UTC).strftime("%A, %d %B %Y")
+today=datetime.datetime.now(datetime.UTC).strftime("%A, %d %B %Y")
 
-p = data["panchang"]
+p=data["panchang"]
 
-prompt = f"""
+prompt=f"""
 Create a TELEGRAM FRIENDLY message.
-
-Use clear sections and simple language.
-
-Format exactly like this:
 
 🔆 DIGITAL DAILY HINDU GUIDE
 ━━━━━━━━━━━━━━━━━━
@@ -28,39 +24,43 @@ Sunrise: {p['sunrise']}
 Sunset: {p['sunset']}
 
 🌙 Panchang
+Month: {p['month']}
 Tithi: {p['tithi_name']}
 Nakshatra: {p['nakshatra_name']}
 Paksha: {p['paksha']}
 
 Meaning
-Explain this lunar day in simple language.
+Explain in simple language.
 
 ━━━━━━━━━━━━━━━━━━
 
-🎉 Festival / Observance
+🎉 Festival
 {p['festival']}
+
+🏵 Regional Observance
+{p['regional_festival']}
 
 ━━━━━━━━━━━━━━━━━━
 
 📿 Mantra for Today
 {p['mantra']}
 
-Explain its meaning.
+Explain meaning simply.
 
 ━━━━━━━━━━━━━━━━━━
 
-📜 Wisdom from Hindu Scriptures
-Short teaching and explanation.
+📜 Wisdom from Scriptures
+Short teaching.
 
 ━━━━━━━━━━━━━━━━━━
 
 🏛 Temple Traditions
-What rituals people may see today.
+Explain briefly.
 
 ━━━━━━━━━━━━━━━━━━
 
 🪔 Simple Dharma Practice
-Give 3 practical actions people can follow today.
+Give 3 simple actions.
 
 ━━━━━━━━━━━━━━━━━━
 
@@ -70,13 +70,13 @@ Short meditation idea.
 ━━━━━━━━━━━━━━━━━━
 
 🌱 Respect Nature
-One simple action for environmental harmony.
+One simple environmental action.
 
 Context:
 {context}
 """
 
-response = requests.post(
+response=requests.post(
 "http://localhost:11434/api/generate",
 json={
 "model":"phi3",
