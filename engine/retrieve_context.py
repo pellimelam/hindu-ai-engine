@@ -4,6 +4,10 @@ import datetime
 import swisseph as swe
 from sentence_transformers import SentenceTransformer
 
+# Location (Hyderabad example — change if needed)
+LAT = 17.3850
+LON = 78.4867
+
 # -----------------------------
 # Panchang names
 # -----------------------------
@@ -26,20 +30,53 @@ NAKSHATRA_NAMES = [
 "Uttara Bhadrapada","Revati"
 ]
 
-# -----------------------------
-# Festival rules
-# -----------------------------
+MANTRA_MAP = {
+11: "Om Namo Bhagavate Vasudevaya",
+14: "Om Namah Shivaya",
+15: "Om Shanti Shanti Shanti",
+30: "Om Pitru Devaya Namah"
+}
 
 FESTIVAL_RULES = {
-
 11: "Ekadashi fasting day observed by many devotees",
-
-14: "Chaturdashi – often associated with Shiva worship",
-
+14: "Chaturdashi – traditionally associated with Shiva worship",
 15: "Purnima – Full Moon spiritual observances",
-
-30: "Amavasya – day for ancestor remembrance and reflection"
+30: "Amavasya – day for ancestor remembrance"
 }
+
+# -----------------------------
+# Sunrise / Sunset
+# -----------------------------
+
+def get_sun_times():
+
+    now = datetime.datetime.now(datetime.UTC)
+
+    jd = swe.julday(now.year, now.month, now.day)
+
+    rise = swe.rise_trans(
+        jd,
+        swe.SUN,
+        lon=LON,
+        lat=LAT,
+        rsmi=swe.CALC_RISE
+    )[1][0]
+
+    set_ = swe.rise_trans(
+        jd,
+        swe.SUN,
+        lon=LON,
+        lat=LAT,
+        rsmi=swe.CALC_SET
+    )[1][0]
+
+    sunrise = swe.revjul(rise)[3]
+    sunset = swe.revjul(set_)[3]
+
+    return {
+        "sunrise": f"{int(sunrise):02d}:{int((sunrise%1)*60):02d}",
+        "sunset": f"{int(sunset):02d}:{int((sunset%1)*60):02d}"
+    }
 
 # -----------------------------
 # Panchang calculation
@@ -64,17 +101,23 @@ def calculate_panchang():
 
     festival = FESTIVAL_RULES.get(tithi_num + 1, "No major festival today")
 
+    mantra = MANTRA_MAP.get(tithi_num + 1, "Om Shanti")
+
+    sun_times = get_sun_times()
+
     return {
 
-        "tithi_number": tithi_num + 1,
         "tithi_name": TITHI_NAMES[tithi_num],
         "nakshatra_name": NAKSHATRA_NAMES[nak_num],
         "paksha": paksha,
-        "festival": festival
+        "festival": festival,
+        "mantra": mantra,
+        "sunrise": sun_times["sunrise"],
+        "sunset": sun_times["sunset"]
     }
 
 # -----------------------------
-# Load corpus embeddings
+# Context retrieval
 # -----------------------------
 
 texts = json.load(open("corpus.json"))
