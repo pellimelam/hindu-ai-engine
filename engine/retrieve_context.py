@@ -4,6 +4,47 @@ import datetime
 import swisseph as swe
 from sentence_transformers import SentenceTransformer
 
+# -----------------------------
+# Panchang names
+# -----------------------------
+
+TITHI_NAMES = [
+"Pratipada","Dvitiya","Tritiya","Chaturthi","Panchami","Shashthi",
+"Saptami","Ashtami","Navami","Dashami","Ekadashi","Dwadashi",
+"Trayodashi","Chaturdashi","Purnima",
+"Pratipada","Dvitiya","Tritiya","Chaturthi","Panchami","Shashthi",
+"Saptami","Ashtami","Navami","Dashami","Ekadashi","Dwadashi",
+"Trayodashi","Chaturdashi","Amavasya"
+]
+
+NAKSHATRA_NAMES = [
+"Ashwini","Bharani","Krittika","Rohini","Mrigashira","Ardra",
+"Punarvasu","Pushya","Ashlesha","Magha","Purva Phalguni",
+"Uttara Phalguni","Hasta","Chitra","Swati","Vishakha",
+"Anuradha","Jyeshtha","Mula","Purva Ashadha","Uttara Ashadha",
+"Shravana","Dhanishta","Shatabhisha","Purva Bhadrapada",
+"Uttara Bhadrapada","Revati"
+]
+
+# -----------------------------
+# Festival rules
+# -----------------------------
+
+FESTIVAL_RULES = {
+
+11: "Ekadashi fasting day observed by many devotees",
+
+14: "Chaturdashi – often associated with Shiva worship",
+
+15: "Purnima – Full Moon spiritual observances",
+
+30: "Amavasya – day for ancestor remembrance and reflection"
+}
+
+# -----------------------------
+# Panchang calculation
+# -----------------------------
+
 def calculate_panchang():
 
     now = datetime.datetime.now(datetime.UTC)
@@ -15,16 +56,26 @@ def calculate_panchang():
 
     diff = (moon - sun) % 360
 
-    tithi = int(diff / 12) + 1
-    nakshatra = int(moon / (360 / 27)) + 1
+    tithi_num = int(diff / 12)
 
-    paksha = "Shukla" if diff < 180 else "Krishna"
+    nak_num = int(moon / (360 / 27))
+
+    paksha = "Shukla Paksha" if diff < 180 else "Krishna Paksha"
+
+    festival = FESTIVAL_RULES.get(tithi_num + 1, "No major festival today")
 
     return {
-        "tithi": tithi,
-        "nakshatra": nakshatra,
-        "paksha": paksha
+
+        "tithi_number": tithi_num + 1,
+        "tithi_name": TITHI_NAMES[tithi_num],
+        "nakshatra_name": NAKSHATRA_NAMES[nak_num],
+        "paksha": paksha,
+        "festival": festival
     }
+
+# -----------------------------
+# Load corpus embeddings
+# -----------------------------
 
 texts = json.load(open("corpus.json"))
 embeddings = np.load("embeddings.npy")
@@ -35,10 +86,8 @@ panchang = calculate_panchang()
 
 query = f"""
 Hindu calendar context
-
-Tithi {panchang['tithi']}
-Nakshatra {panchang['nakshatra']}
-Paksha {panchang['paksha']}
+Tithi {panchang['tithi_name']}
+Nakshatra {panchang['nakshatra_name']}
 """
 
 q = model.encode([query])[0]
@@ -50,7 +99,7 @@ idx = scores.argsort()[-10:]
 context = [texts[i] for i in idx]
 
 json.dump(
-    {"panchang": panchang, "context": context},
-    open("context.json", "w"),
-    indent=2
+{"panchang": panchang, "context": context},
+open("context.json","w"),
+indent=2
 )
