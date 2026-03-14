@@ -6,69 +6,60 @@ on:
     - cron: "30 1 * * *"
 
 jobs:
+
   run:
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Free disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
+    - uses: actions/checkout@v4
 
-      - name: Install system dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y cmake build-essential python3-pip
+    - name: Free disk
+      run: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
 
-      - name: Install Python dependencies
-        run: |
-          pip install -r requirements.txt
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-pip
+        pip install -r requirements.txt
 
-      - name: Cache HuggingFace models
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/huggingface
-          key: hf-model-cache
+    - name: Install Ollama
+      run: |
+        curl -fsSL https://ollama.com/install.sh | sh
 
-      - name: Build llama.cpp
-        run: |
-          git clone https://github.com/ggerganov/llama.cpp
-          cd llama.cpp
-          cmake -B build
-          cmake --build build --config Release
+    - name: Start Ollama
+      run: |
+        ollama serve &
+        sleep 5
 
-      - name: Create scripture corpus
-        run: |
-          mkdir -p scriptures
+    - name: Pull Phi3 model
+      run: |
+        ollama pull phi3
 
-          echo "Arjuna said the mind is restless and difficult to control." > scriptures/bhagavad_gita.txt
-          echo "Krishna replied that discipline and detachment can control the mind." >> scriptures/bhagavad_gita.txt
-          echo "One should perform duty without attachment to results." >> scriptures/bhagavad_gita.txt
+    - name: Create scriptures
+      run: |
+        mkdir -p scriptures
 
-          echo "Let noble thoughts come to us from all directions." > scriptures/vedas.txt
-          echo "Truth is one, sages call it by many names." >> scriptures/vedas.txt
+        echo "Arjuna asked Krishna about the restless nature of the mind." > scriptures/bhagavad_gita.txt
+        echo "Krishna taught that disciplined action without attachment leads to peace." >> scriptures/bhagavad_gita.txt
 
-          echo "The Self is the ultimate reality." > scriptures/upanishads.txt
-          echo "He who knows the Self transcends sorrow." >> scriptures/upanishads.txt
+        echo "Let noble thoughts come from every direction." > scriptures/vedas.txt
 
-          echo "Dharma sustains the world." > scriptures/puranas.txt
-          echo "Devotion leads to liberation." >> scriptures/puranas.txt
+        echo "The Self is the ultimate reality." > scriptures/upanishads.txt
 
-      - name: Ensure models directory
-        run: |
-          mkdir -p models
+        echo "Dharma sustains the world." > scriptures/puranas.txt
 
-      - name: Run AI pipeline
-        run: |
-          python engine/prepare_corpus.py
-          python engine/build_embeddings.py
-          python engine/retrieve_context.py
-          python engine/generate_report.py
-          python engine/refine_report.py
-          python engine/send_telegram.py
-        env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    - name: Run pipeline
+      run: |
+        python engine/prepare_corpus.py
+        python engine/build_embeddings.py
+        python engine/retrieve_context.py
+        python engine/generate_report.py
+        python engine/refine_report.py
+        python engine/send_telegram.py
+      env:
+        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
