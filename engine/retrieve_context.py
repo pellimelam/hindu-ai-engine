@@ -68,23 +68,37 @@ def approximate_lunar_month(date):
 
     return MONTH_NAMES[(m-3)%12]
 
+
 def get_sun_times():
 
-    now=datetime.datetime.now(datetime.UTC)
+    now = datetime.datetime.now(datetime.UTC)
 
-    jd=swe.julday(now.year,now.month,now.day)
+    jd = swe.julday(now.year, now.month, now.day)
 
-    rise=swe.rise_trans(jd,swe.SUN,lon=LON,lat=LAT,rsmi=swe.CALC_RISE)[1][0]
+    geopos = (LON, LAT, 0)
 
-    set_=swe.rise_trans(jd,swe.SUN,lon=LON,lat=LAT,rsmi=swe.CALC_SET)[1][0]
+    rise = swe.rise_trans(
+        jd,
+        swe.SUN,
+        swe.CALC_RISE,
+        geopos=geopos
+    )[1][0]
 
-    sunrise=swe.revjul(rise)[3]
-    sunset=swe.revjul(set_)[3]
+    set_ = swe.rise_trans(
+        jd,
+        swe.SUN,
+        swe.CALC_SET,
+        geopos=geopos
+    )[1][0]
+
+    sunrise = swe.revjul(rise)[3]
+    sunset = swe.revjul(set_)[3]
 
     return {
-        "sunrise":f"{int(sunrise):02d}:{int((sunrise%1)*60):02d}",
-        "sunset":f"{int(sunset):02d}:{int((sunset%1)*60):02d}"
+        "sunrise": f"{int(sunrise):02d}:{int((sunrise%1)*60):02d}",
+        "sunset": f"{int(sunset):02d}:{int((sunset%1)*60):02d}"
     }
+
 
 def calculate_panchang():
 
