@@ -13,12 +13,7 @@ p = data["panchang"]
 prompt = f"""
 Create a TELEGRAM FRIENDLY message.
 
-Rules:
-- very easy language
-- short paragraphs
-- use symbols
-- useful for common people
-- no long essays
+Use clear sections and simple language.
 
 Format exactly like this:
 
@@ -28,47 +23,54 @@ Format exactly like this:
 📅 Date
 {today}
 
+🌅 Sunrise / Sunset
+Sunrise: {p['sunrise']}
+Sunset: {p['sunset']}
+
 🌙 Panchang
 Tithi: {p['tithi_name']}
 Nakshatra: {p['nakshatra_name']}
 Paksha: {p['paksha']}
 
-Meaning:
-Explain what this lunar day represents in simple language.
+Meaning
+Explain this lunar day in simple language.
 
 ━━━━━━━━━━━━━━━━━━
 
 🎉 Festival / Observance
 {p['festival']}
 
-Explain briefly.
+━━━━━━━━━━━━━━━━━━
+
+📿 Mantra for Today
+{p['mantra']}
+
+Explain its meaning.
 
 ━━━━━━━━━━━━━━━━━━
 
 📜 Wisdom from Hindu Scriptures
-Give one short teaching and explain it simply.
+Short teaching and explanation.
 
 ━━━━━━━━━━━━━━━━━━
 
 🏛 Temple Traditions
-What rituals people may see in temples today.
+What rituals people may see today.
 
 ━━━━━━━━━━━━━━━━━━
 
-🪔 Simple Dharma Practice Today
-Give 3 simple actions people can do today.
+🪔 Simple Dharma Practice
+Give 3 practical actions people can follow today.
 
 ━━━━━━━━━━━━━━━━━━
 
 🧘 Quiet Reflection
-Short meditation idea for peace of mind.
+Short meditation idea.
 
 ━━━━━━━━━━━━━━━━━━
 
-🌱 Living with Nature
-One simple action that respects nature.
-
-━━━━━━━━━━━━━━━━━━
+🌱 Respect Nature
+One simple action for environmental harmony.
 
 Context:
 {context}
