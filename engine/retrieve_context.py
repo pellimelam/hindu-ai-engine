@@ -4,15 +4,10 @@ import datetime
 import swisseph as swe
 from sentence_transformers import SentenceTransformer
 
-# Location (Hyderabad example — change if needed)
-LAT = 17.3850
-LON = 78.4867
+LAT=17.3850
+LON=78.4867
 
-# -----------------------------
-# Panchang names
-# -----------------------------
-
-TITHI_NAMES = [
+TITHI_NAMES=[
 "Pratipada","Dvitiya","Tritiya","Chaturthi","Panchami","Shashthi",
 "Saptami","Ashtami","Navami","Dashami","Ekadashi","Dwadashi",
 "Trayodashi","Chaturdashi","Purnima",
@@ -21,7 +16,7 @@ TITHI_NAMES = [
 "Trayodashi","Chaturdashi","Amavasya"
 ]
 
-NAKSHATRA_NAMES = [
+NAKSHATRA_NAMES=[
 "Ashwini","Bharani","Krittika","Rohini","Mrigashira","Ardra",
 "Punarvasu","Pushya","Ashlesha","Magha","Purva Phalguni",
 "Uttara Phalguni","Hasta","Chitra","Swati","Vishakha",
@@ -30,119 +25,132 @@ NAKSHATRA_NAMES = [
 "Uttara Bhadrapada","Revati"
 ]
 
-MANTRA_MAP = {
-11: "Om Namo Bhagavate Vasudevaya",
-14: "Om Namah Shivaya",
-15: "Om Shanti Shanti Shanti",
-30: "Om Pitru Devaya Namah"
+MONTH_NAMES=[
+"Chaitra","Vaishakha","Jyeshtha","Ashadha",
+"Shravana","Bhadrapada","Ashwin","Kartika",
+"Margashirsha","Pausha","Magha","Phalguna"
+]
+
+MANTRA_MAP={
+11:"Om Namo Bhagavate Vasudevaya",
+14:"Om Namah Shivaya",
+15:"Om Shanti Shanti Shanti",
+30:"Om Pitru Devaya Namah"
 }
 
-FESTIVAL_RULES = {
-11: "Ekadashi fasting day observed by many devotees",
-14: "Chaturdashi – traditionally associated with Shiva worship",
-15: "Purnima – Full Moon spiritual observances",
-30: "Amavasya – day for ancestor remembrance"
+FESTIVAL_RULES={
+11:"Ekadashi fasting observed by many devotees",
+14:"Shiva worship day",
+15:"Purnima full moon observances",
+30:"Amavasya ancestor remembrance rituals"
 }
 
-# -----------------------------
-# Sunrise / Sunset
-# -----------------------------
+REGIONAL_FESTIVALS={
+("Chaitra","Shukla","Pratipada"):
+"Ugadi / Gudi Padwa Hindu New Year",
+
+("Shravana","Shukla","Panchami"):
+"Naga Panchami serpent worship",
+
+("Bhadrapada","Shukla","Chaturthi"):
+"Ganesh Chaturthi festival",
+
+("Kartika","Shukla","Ekadashi"):
+"Dev Uthani Ekadashi",
+
+("Ashwin","Krishna","Amavasya"):
+"Diwali preparations in many regions"
+}
+
+def approximate_lunar_month(date):
+
+    m=date.month
+
+    return MONTH_NAMES[(m-3)%12]
 
 def get_sun_times():
 
-    now = datetime.datetime.now(datetime.UTC)
+    now=datetime.datetime.now(datetime.UTC)
 
-    jd = swe.julday(now.year, now.month, now.day)
+    jd=swe.julday(now.year,now.month,now.day)
 
-    rise = swe.rise_trans(
-        jd,
-        swe.SUN,
-        lon=LON,
-        lat=LAT,
-        rsmi=swe.CALC_RISE
-    )[1][0]
+    rise=swe.rise_trans(jd,swe.SUN,lon=LON,lat=LAT,rsmi=swe.CALC_RISE)[1][0]
 
-    set_ = swe.rise_trans(
-        jd,
-        swe.SUN,
-        lon=LON,
-        lat=LAT,
-        rsmi=swe.CALC_SET
-    )[1][0]
+    set_=swe.rise_trans(jd,swe.SUN,lon=LON,lat=LAT,rsmi=swe.CALC_SET)[1][0]
 
-    sunrise = swe.revjul(rise)[3]
-    sunset = swe.revjul(set_)[3]
+    sunrise=swe.revjul(rise)[3]
+    sunset=swe.revjul(set_)[3]
 
     return {
-        "sunrise": f"{int(sunrise):02d}:{int((sunrise%1)*60):02d}",
-        "sunset": f"{int(sunset):02d}:{int((sunset%1)*60):02d}"
+        "sunrise":f"{int(sunrise):02d}:{int((sunrise%1)*60):02d}",
+        "sunset":f"{int(sunset):02d}:{int((sunset%1)*60):02d}"
     }
-
-# -----------------------------
-# Panchang calculation
-# -----------------------------
 
 def calculate_panchang():
 
-    now = datetime.datetime.now(datetime.UTC)
+    now=datetime.datetime.now(datetime.UTC)
 
-    jd = swe.julday(now.year, now.month, now.day, now.hour)
+    jd=swe.julday(now.year,now.month,now.day,now.hour)
 
-    moon = swe.calc_ut(jd, swe.MOON)[0][0]
-    sun = swe.calc_ut(jd, swe.SUN)[0][0]
+    moon=swe.calc_ut(jd,swe.MOON)[0][0]
+    sun=swe.calc_ut(jd,swe.SUN)[0][0]
 
-    diff = (moon - sun) % 360
+    diff=(moon-sun)%360
 
-    tithi_num = int(diff / 12)
+    tithi_num=int(diff/12)
 
-    nak_num = int(moon / (360 / 27))
+    nak_num=int(moon/(360/27))
 
-    paksha = "Shukla Paksha" if diff < 180 else "Krishna Paksha"
+    paksha="Shukla Paksha" if diff<180 else "Krishna Paksha"
 
-    festival = FESTIVAL_RULES.get(tithi_num + 1, "No major festival today")
+    festival=FESTIVAL_RULES.get(tithi_num+1,"No major festival today")
 
-    mantra = MANTRA_MAP.get(tithi_num + 1, "Om Shanti")
+    mantra=MANTRA_MAP.get(tithi_num+1,"Om Shanti")
 
-    sun_times = get_sun_times()
+    sun_times=get_sun_times()
 
-    return {
+    month=approximate_lunar_month(now)
 
-        "tithi_name": TITHI_NAMES[tithi_num],
-        "nakshatra_name": NAKSHATRA_NAMES[nak_num],
-        "paksha": paksha,
-        "festival": festival,
-        "mantra": mantra,
-        "sunrise": sun_times["sunrise"],
-        "sunset": sun_times["sunset"]
+    regional=REGIONAL_FESTIVALS.get(
+        (month,paksha.split()[0],TITHI_NAMES[tithi_num]),
+        "No major regional festival today"
+    )
+
+    return{
+        "tithi_name":TITHI_NAMES[tithi_num],
+        "nakshatra_name":NAKSHATRA_NAMES[nak_num],
+        "paksha":paksha,
+        "month":month,
+        "festival":festival,
+        "regional_festival":regional,
+        "mantra":mantra,
+        "sunrise":sun_times["sunrise"],
+        "sunset":sun_times["sunset"]
     }
 
-# -----------------------------
-# Context retrieval
-# -----------------------------
+texts=json.load(open("corpus.json"))
+embeddings=np.load("embeddings.npy")
 
-texts = json.load(open("corpus.json"))
-embeddings = np.load("embeddings.npy")
+model=SentenceTransformer("all-MiniLM-L6-v2")
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+panchang=calculate_panchang()
 
-panchang = calculate_panchang()
-
-query = f"""
+query=f"""
 Hindu calendar context
 Tithi {panchang['tithi_name']}
 Nakshatra {panchang['nakshatra_name']}
 """
 
-q = model.encode([query])[0]
+q=model.encode([query])[0]
 
-scores = np.dot(embeddings, q)
+scores=np.dot(embeddings,q)
 
-idx = scores.argsort()[-10:]
+idx=scores.argsort()[-10:]
 
-context = [texts[i] for i in idx]
+context=[texts[i] for i in idx]
 
 json.dump(
-{"panchang": panchang, "context": context},
+{"panchang":panchang,"context":context},
 open("context.json","w"),
 indent=2
 )
