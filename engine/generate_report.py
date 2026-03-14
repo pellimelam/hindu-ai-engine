@@ -1,8 +1,6 @@
-import subprocess
+import requests
 import json
 import datetime
-
-MODEL = "models/model.gguf"
 
 data = json.load(open("context.json"))
 
@@ -33,15 +31,15 @@ Temple traditions
 Daily dharma guidance
 """
 
-result = subprocess.run(
-[
-"./llama.cpp/build/bin/llama-cli",
-"-m", MODEL,
-"-p", prompt,
-"-n", "400"
-],
-capture_output=True,
-text=True
+response = requests.post(
+"http://localhost:11434/api/generate",
+json={
+"model": "phi3",
+"prompt": prompt,
+"stream": False
+}
 )
 
-open("draft.txt","w").write(result.stdout)
+result = response.json()["response"]
+
+open("draft.txt","w").write(result)
