@@ -1,65 +1,59 @@
-name: Hindu AI Knowledge Engine
+name: Build Panchang Tiles
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: "30 1 * * *"
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
 
-  run:
+  build:
 
     runs-on: ubuntu-latest
 
     steps:
 
-    - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Free disk
-      run: |
-        sudo rm -rf /usr/share/dotnet
-        sudo rm -rf /opt/ghc
+      - name: Install dependencies
+        run: pip install pyswisseph
 
-    - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y python3-pip
-        pip install -r requirements.txt
+      - name: Generate tiles
+        run: python pipelines/generate_tiles.py
 
-    - name: Install Ollama
-      run: |
-        curl -fsSL https://ollama.com/install.sh | sh
+      - name: Prepare site
+        run: |
+          mkdir -p site
+          cp -r web/* site/
+          cp -r data site/
 
-    - name: Start Ollama
-      run: |
-        ollama serve &
-        sleep 5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
 
-    - name: Pull Phi3 model
-      run: |
-        ollama pull phi3
 
-    - name: Create scriptures
-      run: |
-        mkdir -p scriptures
+  deploy:
 
-        echo "Arjuna asked Krishna about the restless nature of the mind." > scriptures/bhagavad_gita.txt
-        echo "Krishna taught that disciplined action without attachment leads to peace." >> scriptures/bhagavad_gita.txt
+    needs: build
+    runs-on: ubuntu-latest
 
-        echo "Let noble thoughts come from every direction." > scriptures/vedas.txt
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
-        echo "The Self is the ultimate reality." > scriptures/upanishads.txt
+    permissions:
+      pages: write
+      id-token: write
 
-        echo "Dharma sustains the world." > scriptures/puranas.txt
+    steps:
 
-    - name: Run pipeline
-      run: |
-        python engine/prepare_corpus.py
-        python engine/build_embeddings.py
-        python engine/retrieve_context.py
-        python engine/generate_report.py
-        python engine/refine_report.py
-        python engine/send_telegram.py
-      env:
-        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
